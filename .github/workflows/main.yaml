@@ -40,7 +40,7 @@ jobs:
         path: pics
         key: pics
 
-    - name: Mirror repository
+    - name: Clone repository
       env:
         SOURCE_REPO: ${{ secrets.PICS_REPO }}
       run: |
@@ -50,7 +50,7 @@ jobs:
           git remote update --prune
           echo "repo_changed=true" >> $GITHUB_OUTPUT
         else
-          git clone --mirror "$SOURCE_REPO" pics
+          git clone "$SOURCE_REPO" pics --depth 1
           cd pics
           git pull >> file.txt
           grep -qwE "Already up to date." file.txt
