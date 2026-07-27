@@ -1,8 +1,9 @@
 name: Mirror
 
 on:
-  schedule:
-    - cron: '0 0 * * *'
+  push:
+    branches:
+      - develop
   workflow_dispatch:
 
 permissions:
