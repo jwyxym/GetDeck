@@ -63,20 +63,20 @@ jobs:
         fi
 
     - name: Install Rust
-      if: ${{ matrix.source_secret == 'HDARTS_FROM' }}
+      if: ${{ steps.check.outputs.repo_changed == 'true' }}
       uses: dtolnay/rust-toolchain@master
       with:
         toolchain: 1.95.0
 
     - name: Restore mirror cache
-      if: ${{ matrix.source_secret == 'HDARTS_FROM' }}
+      if: ${{ steps.check.outputs.repo_changed == 'true' }}
       uses: actions/cache/restore@v4
       with:
         path: core-wasm/target/release
         key: Rust
 
     - name: Hashing hdarts
-      if: ${{ matrix.source_secret == 'HDARTS_FROM' }}
+      if: ${{ steps.check.outputs.repo_changed == 'true' }}
       run: |
         cd core-wasm
         wget https://github.com/mycard/ygopro-database/raw/refs/heads/master/locales/zh-CN/cards.cdb
@@ -95,7 +95,7 @@ jobs:
         gh cache delete "Rust" || true
 
     - name: Save rust cache
-      if: ${{ matrix.source_secret == 'HDARTS_FROM' }}
+      if: ${{ steps.check.outputs.repo_changed == 'true' }}
       uses: actions/cache/save@v4
       with:
         path: core-wasm/target/release
