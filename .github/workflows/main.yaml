@@ -43,22 +43,29 @@ jobs:
       env:
         SOURCE_REPO: ${{ secrets.PICS_REPO }}
       run: |
+        set -euo pipefail
         if [ -d pics ]; then
           cd pics
           git remote set-url origin "$SOURCE_REPO"
-          git remote update --prune
-          echo "repo_changed=true" >> $GITHUB_ENV
+          IS_FIRST_CLONE=false
         else
           git clone "$SOURCE_REPO" pics --depth 1
           cd pics
-          git pull >> file.txt
-          grep -qwE "Already up to date." file.txt
-          if [ $? -eq 0 ]; then
-            echo "repo_changed=false" >> $GITHUB_ENV
+          IS_FIRST_CLONE=true
+        fi
+
+        git fetch --depth 1 --prune origin
+        if [ "$IS_FIRST_CLONE" = "true" ]; then
+          echo "repo_changed=true" >> "$GITHUB_ENV"
+        else
+          LOCAL_HEAD=$(git rev-parse HEAD)
+          REMOTE_HEAD=$(git rev-parse origin/HEAD)
+          if [ "$LOCAL_HEAD" = "$REMOTE_HEAD" ]; then
+            echo "repo_changed=false" >> "$GITHUB_ENV"
           else
-            echo "repo_changed=true" >> $GITHUB_ENV
+            git reset --hard "$REMOTE_HEAD"
+            echo "repo_changed=true" >> "$GITHUB_ENV"
           fi
-          rm file.txt
         fi
 
     - name: Install Rust
